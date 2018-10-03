@@ -10,7 +10,7 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
 * Google Chrome version:  69.0.3497.100 (Official Build) (64-bit)
 
 #### Plugin Installation:
-* Navigate to Manage Jenkins-> Manage Plugin-> Available. Search for "Nutanix Calm".  Select the Nutanix Calm Plugin. Click to install.
+* Download the plugin file from this link [Nutanix Calm Jenkins Plugin](https://github.com/nutanix/Nutanix-Calm-Jenkins-Plugin/releases/download/v1.0/nutanix-calm.hpi).
 * Navigate to Manage Jenkins→ Manage Plugin → Advanced.  Upload the plugin file.
 
 #### Plugin Configuration:
