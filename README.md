@@ -14,18 +14,18 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
 * Navigate to Manage Jenkins→ Manage Plugins → Advanced.  Upload the plugin file.
   ![](Docs/screenshots/Upload_plugin.png)
 * To verify that the Nutanix Calm plug-in is successfully installed, click Manage Jenkins→ Manage Plugins→ Installed search for Nutanix Calm plugin.
-  !(Docs/screenshots/Verify_plugin.png)
+  ![](Docs/screenshots/Verify_plugin.png)
 
 #### Plugin Configuration:
 * To configure the plugin first Navigate to Manage Jenkins -> Configure System -> Nutanix Calm Plugin Configuration. Provide the Prism Central IP, Username and Password.
-  !(Docs/screenshots/Plugin_configuration.png)
+  ![](Docs/screenshots/Plugin_configuration.png)
 
 #### Jenkins Freestyle job Setup:
 * Click on New Item.Select Freestyle project. Enter an item name. Click OK.
-  !(Docs/screenshots/Click_on_newitem.png)
-  !(Docs/screenshots/Select_freestyle_project.png)
+  ![](Docs/screenshots/Click_on_newitem.png)
+  ![](Docs/screenshots/Select_freestyle_project.png)
 * Click on Add Build step. Select **Nutanix Calm Blueprint Launch**.
-  !(Docs/screenshots/Select_bp_launch_step.png)
+  ![](Docs/screenshots/Select_bp_launch_step.png)
 * In the section
     * Select the Calm project.
     * Select the Blueprint to launch. Blueprint description is fetched and displayed.
@@ -33,21 +33,21 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
     * Modify the values for runtime variables available for that application profile.
     * Provide an application name. BUILD_ID is appended by default to the application name to uniquely identify it in Calm.
     * Select the option if you want Jenkins job to wait for blueprint launch to complete before proceeding to the next step.
-      !(Docs/screenshots/Enter_bp_launch_step.png)
+      ![](Docs/screenshots/Enter_bp_launch_step.png)
 * To invoke actions defined in the Calm blueprint/ application, click on Add Build Step. Select **Nutanix Calm Application Action Run**.
   !(Docs/screenshots/Select_app_action_step.png)
 * In the section
     * Select the application name.
     * Select the application actions available.
     * If necessary, modify the values for the runtime variables available.
-      !(Docs/screenshots/Enter_app_action_step.png)
+      ![](Docs/screenshots/Enter_app_action_step.png)
 
 #### Jenkins Pipeline:
 * Click on New Item. Select Pipeline. Enter an item name. Click OK.
-  !(Docs/screenshots/Click_on_newitem.png)
-  !(Docs/screenshots/Select_pipeline.png)
+  ![](Docs/screenshots/Click_on_newitem.png)
+  ![](Docs/screenshots/Select_pipeline.png)
 * Select pipeline script in Pipeline Definition section and to generate the pipeline syntax click on the Pipeline Syntax at the bottom.
-  !(Docs/screenshots/Select_pipeline.png)
+  ![](Docs/screenshots/Select_pipeline.png)
 * In the Pipeline Syntax window, select the General build Step in the Sample step dropdown.
   * Select Nutanix Calm Blueprint Launch in Build Step
 * In the section
@@ -58,11 +58,11 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
     * Provide an application name. BUILD_ID is appended by default to the application name to uniquely identify it in Calm.
     * Select the option if you want Jenkins job to wait for blueprint launch to complete before proceeding to the next step.
     * Click on Generate Pipeline Script.
-      !(Docs/screenshots/Pipeline_bp_launch.png)
+      ![](Docs/screenshots/Pipeline_bp_launch.png)
 * Copy and paste the text in the box below into the pipeline script box.
 * Follow same steps to generate the pipeline syntax for **Nutanix Calm Application Action Run**.
-  !(Docs/screenshots/Pipeline_app_action.png)
+  ![](Docs/screenshots/Pipeline_app_action.png)
 * We can use Pipeline script from SCM in Pipeline Definition section
-  !(Docs/screenshots/Pipeline_scm.png)
+  ![](Docs/screenshots/Pipeline_scm.png)
 
 
