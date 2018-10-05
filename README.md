@@ -41,6 +41,9 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
     * Select the application actions available.
     * If necessary, modify the values for the runtime variables available.
       ![](Docs/screenshots/Enter_app_action_step.png)
+    * Click on Apply and then Save.
+    * Now we can click and **Build Now** and we can check the console output for this build.
+    * ![](Docs/screenshots/Build_Now_Freestyle_Project.png)
 
 #### Jenkins Pipeline:
 * Click on New Item. Select Pipeline. Enter an item name. Click OK.
@@ -60,11 +63,14 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
     * Click on Generate Pipeline Script.
       ![](Docs/screenshots/Pipeline_bp_launch.png)
 * Copy and paste the text in the box below into the pipeline script box.
-  ![](Docs/screenshots/Pipeline_bp_launch.png)
-* Follow same steps to generate the pipeline syntax for **Nutanix Calm Application Action Run**.
   ![](Docs/screenshots/Copy_bp_launch_script.png)
+* Follow same steps to generate the pipeline syntax for **Nutanix Calm Application Action Run**.
+  ![](Docs/screenshots/Pipeline_bp_launch.png)
 * Copy and paste the text in the box below into the pipeline script box.
   ![](Docs/screenshots/Copy_App_Action_Script.png)
+* Click on Apply and then Save.
+* Now we can click and **Build Now** and we can check the console output for this build.
+* ![](Docs/screenshots/Build_Now_Pipeline.png)
 * We can also use Pipeline script from SCM in Pipeline Definition section
   ![](Docs/screenshots/Pipeline_scm.png)
 
