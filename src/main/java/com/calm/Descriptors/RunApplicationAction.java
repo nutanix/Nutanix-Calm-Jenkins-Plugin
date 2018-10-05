@@ -6,11 +6,17 @@ import com.calm.Executor.CalmExecutor;
 import com.calm.GlobalConfiguration.CalmGlobalConfiguration;
 import com.calm.Interface.Rest;
 import com.calm.Logger.NutanixCalmLogger;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+import hudson.security.ACL;
 import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import hudson.*;
 import hudson.model.*;
@@ -48,11 +54,20 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
     @Override
     public void perform(Run build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         PrintStream log = listener.getLogger();
-        RunActionDescriptorImpl actionDescriptor = getDescriptor();
-        String prismCentralIp = actionDescriptor.getPrismCentralIp();
-        String userName = actionDescriptor.getUserName();
-        String password = actionDescriptor.getPassword();
-        Rest rest = actionDescriptor.getRest();
+        CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
+        String prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
+        String credId = calmGlobalConfiguration.getCredentials();
+        String userName = null, password = null;
+        List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
+                (StandardUsernamePasswordCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
+        for(StandardUsernamePasswordCredentials credential : standardCredentials){
+            if(credential.getId().equals(credId)){
+                userName = credential.getUsername();
+                password = credential.getPassword().getPlainText();
+                break;
+            }
+        }
+        Rest rest = new Rest(prismCentralIp, userName, password);
         EnvVars envVars = new EnvVars();
         final EnvVars env = build.getEnvironment(listener);
         //Expanding appname to include the env variables in it's name
@@ -151,14 +166,17 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
             prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
             userName = calmGlobalConfiguration.getUserName();
             password = calmGlobalConfiguration.getPassword();
+            String credId = calmGlobalConfiguration.getCredentials();
+            List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
+                    (StandardUsernamePasswordCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
+            for(StandardUsernamePasswordCredentials credential : standardCredentials){
+                if(credential.getId().equals(credId)){
+                    userName = credential.getUsername();
+                    password = credential.getPassword().getPlainText();
+                    break;
+                }
+            }
             rest = new Rest(prismCentralIp, userName, password);
-//            try{
-//                applicationHelper = Application.getInstance(rest);
-//            }
-//            catch (Exception e){
-//                LOGGER.debug("ERROR occurred while initializing the application helper");
-//                LOGGER.debug(LOGGER.getStackTraceStr(e.getStackTrace()));
-//            }
             return String.valueOf(lastEditorId++);
         }
 

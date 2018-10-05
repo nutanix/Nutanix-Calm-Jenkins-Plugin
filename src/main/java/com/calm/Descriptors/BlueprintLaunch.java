@@ -7,7 +7,12 @@ import com.calm.Executor.CalmExecutor;
 import com.calm.GlobalConfiguration.CalmGlobalConfiguration;
 import com.calm.Interface.Rest;
 import com.calm.Logger.NutanixCalmLogger;
+import com.cloudbees.plugins.credentials.common.*;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+import hudson.security.ACL;
 import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import java.io.*;
 import java.util.*;
@@ -83,10 +88,19 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
         //Expanding appname to include the env variables in it's name
         String expandedApplicationName = env.expand(applicationName);
         log.println("Executing Nutanix Calm Blueprint launch Build Step");
-        BlueprintLaunchDescriptorImpl blueprintLaunchDescriptor = getDescriptor();
-        String prismCentralIp = blueprintLaunchDescriptor.getPrismCentralIp();
-        String userName = blueprintLaunchDescriptor.getUserName();
-        String password = blueprintLaunchDescriptor.getPassword();
+        CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
+        String prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
+        String credId = calmGlobalConfiguration.getCredentials();
+        String userName = null, password = null;
+        List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
+                (StandardUsernamePasswordCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
+        for(StandardUsernamePasswordCredentials credential : standardCredentials){
+            if(credential.getId().equals(credId)){
+                userName = credential.getUsername();
+                password = credential.getPassword().getPlainText();
+                break;
+            }
+        }
         CalmExecutor calmExecutor = new CalmExecutor(prismCentralIp, userName, password, projectName, blueprintName,
                 appProfileName, actionName, runtimeVariables, expandedApplicationName, waitForSuccessFulLaunch, log);
         log.println("##Connecting to calm instance##");
@@ -180,17 +194,17 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
         public synchronized String createEditorId() {
             CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
             prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
-            userName = calmGlobalConfiguration.getUserName();
-            password = calmGlobalConfiguration.getPassword();
+            String credId = calmGlobalConfiguration.getCredentials();
+            List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
+                    (StandardUsernamePasswordCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
+            for(StandardUsernamePasswordCredentials credential : standardCredentials){
+                if(credential.getId().equals(credId)){
+                    userName = credential.getUsername();
+                    password = credential.getPassword().getPlainText();
+                    break;
+                }
+            }
             rest = new Rest(prismCentralIp, userName, password);
-//            try {
-//                projectHelper = Project.getInstance(rest);
-//                blueprintHelper = Blueprint.getInstance(rest);
-//            }
-//            catch (Exception e){
-//                LOGGER.debug("ERROR occurred while initializing the project and blueprint helper");
-//                LOGGER.debug(LOGGER.getStackTraceStr(e.getStackTrace()));
-//            }
             return String.valueOf(lastEditorId++);
         }
 
@@ -253,7 +267,6 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
         public ListBoxModel doFillActionNameItems(@QueryParameter("actionName") String actionName){
             return new ListBoxModel(new ListBoxModel.Option(actionName));
         }
-
 
     }
 

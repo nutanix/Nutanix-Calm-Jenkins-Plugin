@@ -48,29 +48,33 @@
                             return;
                           }
                           sel.innerHTML = null;
-                          var opt = document.createElement('option');
-                          opt.innerHTML = "Applications created in Jenkins Blueprint Launch build step";
-                          opt.value = "Applications created in Jenkins Blueprint Launch build step";
-                          opt.setAttribute('disabled','disabled');
-                          opt.setAttribute('selected','true');
-                          sel.appendChild(opt);
-                          applicationNames.forEach(function(appObj){
+                          if(applicationNames !== null){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = "Applications created in Jenkins Blueprint Launch build step";
+                            opt.value = "Applications created in Jenkins Blueprint Launch build step";
+                            opt.setAttribute('disabled','disabled');
+                            opt.setAttribute('selected','true');
+                            sel.appendChild(opt);
+                            applicationNames.forEach(function(appObj){
                                  var opt = document.createElement('option');
                                  opt.innerHTML = appObj.value;
                                  opt.value = appObj.value;
                                  sel.appendChild(opt);
-                          });
-                          var opt = document.createElement('option');
-                          opt.innerHTML = "Existing Applications in Nutanix Calm";
-                          opt.value = "Existing Applications in Nutanix Calm";
-                          opt.setAttribute('disabled','disabled');
-                          sel.appendChild(opt);
-                          var i;
-                          for(i = 0; i &lt; apps.length; i++){
+                            });
+                          }
+                          if(apps.length &gt; 0){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = "Existing Applications in Nutanix Calm";
+                            opt.value = "Existing Applications in Nutanix Calm";
+                            opt.setAttribute('disabled','disabled');
+                            sel.appendChild(opt);
+                            var i;
+                            for(i = 0; i &lt; apps.length; i++){
                                    var opt = document.createElement('option');
                                    opt.innerHTML = apps[i];
                                    opt.value = apps[i];
                                    sel.appendChild(opt);
+                            }
                           }
 
                     });

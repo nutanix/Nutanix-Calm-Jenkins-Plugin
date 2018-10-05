@@ -1,5 +1,5 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
   <!--
     This Jelly script is used to produce the global configuration option.
 
@@ -17,13 +17,8 @@
                  description="eg: 10.0.0.1">
             <f:textbox clazz="required" checkMessage="${%IP Address is mandatory}" value="${instance.prismCentralIp}"/>
         </f:entry>
-        <f:entry title="Username" field="userName"
-                 description="User enabled to access Nutanix Calm">
-            <f:textbox clazz="required" checkMessage="${%Username is mandatory}" value="${instance.userName}"/>
-        </f:entry>
-        <f:entry title="Password" field="password"
-                 description="">
-            <f:password clazz="required" checkMessage="${%Password is mandatory}" value="${instance.password}"/>
+        <f:entry  title="${%Credentials}" field="credentials">
+             <c:select/>
         </f:entry>
     </f:section>
 </j:jelly>
