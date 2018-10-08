@@ -77,13 +77,13 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
 
 * Please find the below mentioned pipeline/jenkinsfile syntax for our reference for **Nutanix Calm Blueprint Launch** and **Nutanix Calm Application Action Run** build steps.
     * Nutanix Calm Blueprint Launch
-    > step([$class: 'BlueprintLaunch', appProfileName: '**Enter_Application_Profile_name**', applicationName: '**Enter_application_name**_${BUILD_ID}', blueprintDescription: '**Enter_blueprint_description**>', blueprintName: '**Enter_blueprint_name**', projectName: '**Enter_project_name**', runtimeVariables: '''{
-          <"key": "value">
-      }''', waitForSuccessFulLaunch: Enter_true_or_false])
+    > step([$class: 'BlueprintLaunch', appProfileName: '**&lt;Enter Application Profile name&gt;**', applicationName: '**&lt;Enter application name&gt;**_${BUILD_ID}', blueprintDescription: '**&lt;Enter blueprint description&gt;**', blueprintName: '**&lt;Enter blueprint name&gt;**', projectName: '**&lt;Enter project name&gt;**', runtimeVariables: '''{
+          "**&lt;key&gt;**": "**&lt;value&gt;**"
+      }''', waitForSuccessFulLaunch: **&lt;Enter true or false&lt;**])
 
     * Nutanix Calm Application Action Run
-    > step([$class: 'RunApplicationAction', actionName: '**Enter_Action_name**', applicationName: '**Enter_Application_name**_${BUILD_ID}', runtimeVariables: '''{
-          <"key": "value">
+    > step([$class: 'RunApplicationAction', actionName: '**&lt;Enter Action name&gt;**', applicationName: '**&lt;Enter application name&gt;**_${BUILD_ID}', runtimeVariables: '''{
+          "**&lt;key&gt;**": "**&lt;value&gt;**"
       }'''])
 
     * NOTE: We need to put the required build steps pipeline script in **node{}** for pipeline/jenkinsfile invocation.
