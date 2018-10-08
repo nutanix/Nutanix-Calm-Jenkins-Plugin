@@ -77,12 +77,12 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
 
 * Please find the below mentioned pipeline/jenkinsfile syntax for our reference for **Nutanix Calm Blueprint Launch** and **Nutanix Calm Application Action Run** build steps.
     * Nutanix Calm Blueprint Launch
-    > step([$class: 'BlueprintLaunch', appProfileName: '<Enter Application Profile name>', applicationName: '<Enter application name>_${BUILD_ID}', blueprintDescription: '<Enter blueprint description>', blueprintName: '<Enter blueprint name>', projectName: '<Enter project name>', runtimeVariables: '''{
+    > step([$class: 'BlueprintLaunch', appProfileName: 'Enter_Application_Profile_name', applicationName: 'Enter_application_name_${BUILD_ID}', blueprintDescription: 'Enter_blueprint_description>', blueprintName: 'Enter_blueprint_name>', projectName: 'Enter_project_name', runtimeVariables: '''{
           <"key": "value">
-      }''', waitForSuccessFulLaunch: <true or false>])
+      }''', waitForSuccessFulLaunch: Enter_true_or_false])
 
     * Nutanix Calm Application Action Run
-    > step([$class: 'RunApplicationAction', actionName: '<Enter Action name>', applicationName: '<Enter Application name>_${BUILD_ID}', runtimeVariables: '''{
+    > step([$class: 'RunApplicationAction', actionName: 'Enter_Action_name', applicationName: 'Enter_Application_name_${BUILD_ID}', runtimeVariables: '''{
           <"key": "value">
       }'''])
 
