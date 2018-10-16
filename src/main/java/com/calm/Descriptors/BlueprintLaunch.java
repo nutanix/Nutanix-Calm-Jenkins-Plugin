@@ -9,7 +9,7 @@ import com.calm.Interface.Rest;
 import com.calm.Logger.NutanixCalmLogger;
 import com.cloudbees.plugins.credentials.common.*;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
-import hudson.security.ACL;
+import hudson.security.*;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -192,6 +192,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
 
         @JavaScriptMethod
         public synchronized String createEditorId() {
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
             prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
             String credId = calmGlobalConfiguration.getCredentials();
@@ -214,6 +215,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
             /**
              * This method gets called by the javascript in the config.jelly for listing projects in UI
              */
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return Project.getInstance(rest).getProjectNames();
         }
 
@@ -223,6 +225,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
             /**
              * This method get called by the javascript in the config.jelly for listing blueprints in UI
              */
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             blueprintHelper = Blueprint.getInstance(rest);
             return blueprintHelper.getBlueprintsList(projectName);
         }
@@ -232,22 +235,25 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
             /**
              * This method get called by the javascript in the config.jelly for listing profiles in UI
              */
-
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return blueprintHelper.getAppProfiles(blueprintName);
         }
 
         @JavaScriptMethod
         public List<String> fetchProfileActions(String blueprintName,String appProfileName)throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return blueprintHelper.getProfileActions(blueprintName, appProfileName);
         }
 
         @JavaScriptMethod
         public  String fetchRuntimeProfileVariables(String blueprintName, String appProfileName)throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return blueprintHelper.fetchRunTimeProfileVariables(blueprintName, appProfileName);
         }
 
         @JavaScriptMethod
         public String fetchBlueprintDescription(String blueprintName){
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return blueprintHelper.fetchBlueprintDescription(blueprintName);
         }
 

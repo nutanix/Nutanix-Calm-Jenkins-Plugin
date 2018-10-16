@@ -10,6 +10,7 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import hudson.security.ACL;
+import hudson.security.Permission;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -162,6 +163,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
 
         @JavaScriptMethod
         public synchronized String createEditorId() {
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
             prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
             userName = calmGlobalConfiguration.getUserName();
@@ -183,27 +185,32 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
 
         @JavaScriptMethod
         public List<String> fetchApplications()throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             applicationHelper = Application.getInstance(rest);
             return applicationHelper.getApplicationNames();
         }
 
         @JavaScriptMethod
         public List<String> fetchApplicationActions(String applicationName)throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return applicationHelper.getApplicationActions(applicationName);
         }
 
         @JavaScriptMethod
         public  String fetchRuntimeProfileActionVariables(String applicationName, String actionName)throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return  applicationHelper.fetchRuntimeProfileActionVariables(applicationName, actionName);
         }
 
         @JavaScriptMethod
         public List<String> getProfileActionsFromBlueprint(String blueprintName, String appProfileName)throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return applicationHelper.getProfileActionsFromBlueprint(blueprintName, appProfileName);
         }
 
         @JavaScriptMethod
         public String getProfileActionsVariablesFromBlueprint(String blueprintName, String appProfileName, String actionName)throws Exception{
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             return applicationHelper.getProfileActionsVariablesFromBlueprint(blueprintName, appProfileName, actionName);
         }
 
