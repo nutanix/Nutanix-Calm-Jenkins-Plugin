@@ -14,13 +14,13 @@ import java.io.PrintStream;
 public class CalmExecutor {
     private String prismCentralIp, userName, password, blueprintName, applicationName, applicationProfileName, actionName,
             projectName, runTimeVariables;
-    private  boolean waitForLaunchSuccess;
+    private  boolean waitForLaunchSuccess, verifyCertificate;
     private final PrintStream logger;
 
 
     public CalmExecutor(String prismCentralIp, String userName, String password, String projectName, String blueprintName,
-                String appProfileName, String actionName, String runtimeVariables, String applicationName,
-                        boolean waitForLaunchSuccess, PrintStream logger) {
+                        String appProfileName, String actionName, String runtimeVariables, String applicationName,
+                        boolean waitForLaunchSuccess, PrintStream logger, boolean verifyCertificate) {
         this.prismCentralIp = prismCentralIp;
         this.userName = userName;
         this.password = password;
@@ -32,10 +32,11 @@ public class CalmExecutor {
         this.runTimeVariables = runtimeVariables;
         this.waitForLaunchSuccess = waitForLaunchSuccess;
         this.logger = logger;
+        this.verifyCertificate = verifyCertificate;
     }
 
     public CalmExecutor(String prismCentralIp, String userName, String password, String applicationName,
-                        String actionName, String runTimeVariables, PrintStream logger){
+                        String actionName, String runTimeVariables, PrintStream logger, boolean verifyCertificate){
         this.prismCentralIp = prismCentralIp;
         this.userName = userName;
         this.password = password;
@@ -43,11 +44,11 @@ public class CalmExecutor {
         this.actionName = actionName;
         this.runTimeVariables = runTimeVariables;
         this.logger = logger;
-
+        this.verifyCertificate = verifyCertificate;
     }
 
     public void launchBlueprint()throws Exception{
-        Rest rest = new Rest(this.prismCentralIp, this.userName, this.password);
+        Rest rest = new Rest(this.prismCentralIp, this.userName, this.password, this.verifyCertificate);
         Blueprint blueprintHelper = Blueprint.getInstance(rest);
         Application applicationHelper = Application.getInstance(rest);
         String applicationUuid = null;
@@ -92,9 +93,9 @@ public class CalmExecutor {
             }
         }
     }
-    
+
     public void runAppAction()throws Exception{
-        Rest rest =  new Rest(prismCentralIp, userName, password);
+        Rest rest =  new Rest(prismCentralIp, userName, password, this.verifyCertificate);
         Application applicationHelper = Application.getInstance(rest);
         String  appUuid = applicationHelper.getAppUUID(this.applicationName);
         JSONObject appResponse = applicationHelper.getApplicationDetails(appUuid);

@@ -21,12 +21,13 @@ public class Rest {
     private final String PRISMCENTRALIP;
     private final String USERNAME;
     private final String PASSWORD;
-
-    public Rest(String prismCentralIp, String userName, String password){
+    private final boolean VERIFY_CERTIFICATES;
+    public Rest(String prismCentralIp, String userName, String password, boolean verify) {
         PRISMCENTRALIP = prismCentralIp;
         USERNAME = userName;
         PASSWORD = password;
         BASE_URL = BASE_URL.replace("<pcip>", PRISMCENTRALIP);
+        VERIFY_CERTIFICATES = verify;
     }
 
     public JSONObject get(String relativeURL)throws Exception{
@@ -45,51 +46,51 @@ public class Rest {
     }
 
     private JSONObject send_request(String relativeURL, String requestType, String... payload) throws Exception{
-
-        //add certificate
-        trustCertificates();
+        if (!VERIFY_CERTIFICATES) {
+            trustCertificates();//skip certificate validation
+        }
 
         //Connect to url
         URL url = new URL(BASE_URL + relativeURL);
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         try {
 
-                String encoding = DatatypeConverter.printBase64Binary((USERNAME + ":" + PASSWORD).getBytes());
-                httpURLConnection.setRequestMethod(requestType);
+            String encoding = DatatypeConverter.printBase64Binary((USERNAME + ":" + PASSWORD).getBytes());
+            httpURLConnection.setRequestMethod(requestType);
+            httpURLConnection.setDoOutput(true);
+            httpURLConnection.setRequestProperty("Authorization", "Basic " + encoding);
+            httpURLConnection.setRequestProperty("User-Agent", "Mozilla/5.0");
+            httpURLConnection.setRequestProperty("Content-Type", "application/json");
+
+            //send payload for post request
+            if(requestType.equals(POST)){
                 httpURLConnection.setDoOutput(true);
-                httpURLConnection.setRequestProperty("Authorization", "Basic " + encoding);
-                httpURLConnection.setRequestProperty("User-Agent", "Mozilla/5.0");
-                httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                OutputStream os = httpURLConnection.getOutputStream();
+                if(payload.length > 0)
+                    os.write(payload[0].getBytes());
+                else
+                    os.write(DEFAULT_POST_PARAMS.getBytes());
+                os.flush();
+                os.close();
+            }
 
-                //send payload for post request
-                if(requestType.equals(POST)){
-                     httpURLConnection.setDoOutput(true);
-                     OutputStream os = httpURLConnection.getOutputStream();
-                     if(payload.length > 0)
-                            os.write(payload[0].getBytes());
-                     else
-                            os.write(DEFAULT_POST_PARAMS.getBytes());
-                     os.flush();
-                     os.close();
-                }
+            //return the response on success
+            int responseCode = httpURLConnection.getResponseCode();
+            switch (responseCode){
+                case 200 :  BufferedReader bufferedReader =
+                        new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                    String inputLine;
+                    StringBuffer response = new StringBuffer();
+                    while ((inputLine = bufferedReader.readLine()) != null)
+                        response.append(inputLine);
+                    return new JSONObject(response.toString());
+                default :   //TODO: Throw user defined exception
+                    throw new Exception("URL: " + url.toString() + "\n" +
+                            "Payload: " + (payload.length > 0?payload[0]:null) + "\n" +
+                            "Response code: "+ responseCode + "\n" +
+                            "Response: " + httpURLConnection.getResponseMessage());
 
-                //return the response on success
-                int responseCode = httpURLConnection.getResponseCode();
-                switch (responseCode){
-                        case 200 :  BufferedReader bufferedReader =
-                                        new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-                                    String inputLine;
-                                    StringBuffer response = new StringBuffer();
-                                    while ((inputLine = bufferedReader.readLine()) != null)
-                                            response.append(inputLine);
-                                    return new JSONObject(response.toString());
-                        default :   //TODO: Throw user defined exception
-                                    throw new Exception("URL: " + url.toString() + "\n" +
-                                                        "Payload: " + (payload.length > 0?payload[0]:null) + "\n" +
-                                                        "Response code: "+ responseCode + "\n" +
-                                                        "Response: " + httpURLConnection.getResponseMessage());
-
-                }
+            }
         }
         catch (Exception e){
             System.out.println("Error occurred while sending request");
