@@ -57,6 +57,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
         PrintStream log = listener.getLogger();
         CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
         String prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
+        boolean verifyCertificate = calmGlobalConfiguration.isValidateCertificates();
         String credId = calmGlobalConfiguration.getCredentials();
         String userName = null, password = null;
         List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
@@ -68,7 +69,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
                 break;
             }
         }
-        Rest rest = new Rest(prismCentralIp, userName, password);
+        Rest rest = new Rest(prismCentralIp, userName, password, verifyCertificate);
         EnvVars envVars = new EnvVars();
         final EnvVars env = build.getEnvironment(listener);
         //Expanding appname to include the env variables in it's name
@@ -82,7 +83,8 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
         }
         log.println(" ");
         log.println("Executing Nutanix Calm Application Action Run Build Step");
-        CalmExecutor calmExecutor = new CalmExecutor(prismCentralIp, userName, password, expandedApplicationName,  actionName, runtimeVariables, log);
+        CalmExecutor calmExecutor = new CalmExecutor(prismCentralIp, userName, password, expandedApplicationName,
+                actionName, runtimeVariables, log, verifyCertificate);
         log.println("##Connecting to calm instance##");
         List<String> globalError = new ArrayList<String>();
         try{
@@ -166,9 +168,8 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
             Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
             prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
-            userName = calmGlobalConfiguration.getUserName();
-            password = calmGlobalConfiguration.getPassword();
             String credId = calmGlobalConfiguration.getCredentials();
+            boolean verifyCertificate = calmGlobalConfiguration.isValidateCertificates();
             List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
                     (StandardUsernamePasswordCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
             for(StandardUsernamePasswordCredentials credential : standardCredentials){
@@ -178,7 +179,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
                     break;
                 }
             }
-            rest = new Rest(prismCentralIp, userName, password);
+            rest = new Rest(prismCentralIp, userName, password, verifyCertificate);
             return String.valueOf(lastEditorId++);
         }
 

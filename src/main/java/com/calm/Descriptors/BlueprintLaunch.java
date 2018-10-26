@@ -90,6 +90,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
         log.println("Executing Nutanix Calm Blueprint launch Build Step");
         CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
         String prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
+        boolean verifyCertificate = calmGlobalConfiguration.isValidateCertificates();
         String credId = calmGlobalConfiguration.getCredentials();
         String userName = null, password = null;
         List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
@@ -102,7 +103,8 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
             }
         }
         CalmExecutor calmExecutor = new CalmExecutor(prismCentralIp, userName, password, projectName, blueprintName,
-                appProfileName, actionName, runtimeVariables, expandedApplicationName, waitForSuccessFulLaunch, log);
+                appProfileName, actionName, runtimeVariables, expandedApplicationName, waitForSuccessFulLaunch, log,
+                verifyCertificate);
         log.println("##Connecting to calm instance##");
         List<String> globalError = new ArrayList<String>();
         try{
@@ -196,6 +198,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
             CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
             prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
             String credId = calmGlobalConfiguration.getCredentials();
+            boolean verifyCertificate = calmGlobalConfiguration.isValidateCertificates();
             List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials
                     (StandardUsernamePasswordCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
             for(StandardUsernamePasswordCredentials credential : standardCredentials){
@@ -205,7 +208,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
                     break;
                 }
             }
-            rest = new Rest(prismCentralIp, userName, password);
+            rest = new Rest(prismCentralIp, userName, password, verifyCertificate);
             return String.valueOf(lastEditorId++);
         }
 

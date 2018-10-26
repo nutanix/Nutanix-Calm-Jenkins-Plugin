@@ -12,13 +12,56 @@
       tags they use. Views are always organized according to its owner class,
       so it should be straightforward to find them.
     -->
+    <style type="text/css">
+                .status{
+                      background-color: lightgray;
+                      height: 70px;
+                }
+                .verify{
+                       background-color: gainsboro;
+                       border-radius: 25px;
+                       cursor: pointer;
+                }
+                .verify:hover {
+                    background-color: darkgray;
+
+                }
+    </style>
+    <st:bind var="calmConfig" value="${descriptor}"/>
     <f:section title="Nutanix Calm Plugin Configuration">
         <f:entry title="Prism Central IP" field="prismCentralIp"
                  description="eg: 10.0.0.1">
-            <f:textbox clazz="required" checkMessage="${%IP Address is mandatory}" value="${instance.prismCentralIp}"/>
+            <f:textbox clazz="required" checkMessage="${%IP Address is mandatory}" value="${instance.prismCentralIp}" id="prismCentralIp"/>
         </f:entry>
         <f:entry  title="${%Credentials}" field="credentials">
              <c:select/>
         </f:entry>
+        <f:entry title="Verify certificates" field="verifyCertificate">
+           <f:checkbox default="true" id="validateCertificate"/>
+        </f:entry>
+        <f:entry>
+            <input type="button" value="Verify" onclick="doValidate()" class="verify"/>
+        </f:entry>
+        <f:entry title="Status" field="status">
+               <f:textarea id="status" readonly="readonly" class="status"/>
+        </f:entry>
     </f:section>
+    <script>
+      function doValidate(){
+                 var statusElement = document.getElementById("status");
+                 statusElement.value = null;
+                 prismCentralIp = document.getElementById("prismCentralIp").getValue();
+                 parent = document.getElementById("prismCentralIp").parentElement.parentElement;
+                 sibling = parent.nextSibling.nextSibling.nextSibling.nextSibling;
+                 credentialId = sibling.querySelector(".credentials-select").getValue();
+                 validateCertificate = document.getElementById("validateCertificate").getValue();
+                 console.log("certs "+ Boolean(validateCertificate));
+                 calmConfig.isCalmEnabled(prismCentralIp, credentialId, Boolean(validateCertificate), function (obj){
+                 message = obj.responseObject();
+                 statusElement.value = message;
+                });
+      }
+    </script>
+
 </j:jelly>
+
