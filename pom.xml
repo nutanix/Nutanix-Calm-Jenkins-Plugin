@@ -8,14 +8,13 @@
         <relativePath />
     </parent>
     <artifactId>nutanix-calm</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>hpi</packaging>
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.7.3</jenkins.version>
         <!-- Other properties you may want to use:
-          ~ java.level: set to 6 if your jenkins.version <= 1.611
-          ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
+          ~ java.level: set to 6 if your jenkins.version <= 1.611 ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
           ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
           ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
      -->
@@ -119,7 +118,8 @@
         <connection>scm:git:git://github.com/jenkinsci/Nutanix-Calm-Plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/Nutanix-Calm-Plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/Nutanix-Calm-Plugin</url>
-    </scm>
+      <tag>nutanix-calm-1.1</tag>
+  </scm>
 
     <repositories>
         <repository>
