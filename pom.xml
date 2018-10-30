@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>nutanix-calm</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
@@ -114,12 +114,19 @@
       </developer>
     </developers>
 
-    <scm>
+     <distributionManagement>
+        <repository>
+        <id>maven.jenkins-ci.org</id>
+        <url>https://repo.jenkins-ci.org/releases</url>
+        </repository>
+    </distributionManagement>
+    
+     <scm>
         <connection>scm:git:git://github.com/jenkinsci/nutanix-calm-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/nutanix-calm-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/nutanix-calm-plugin</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <repositories>
         <repository>
