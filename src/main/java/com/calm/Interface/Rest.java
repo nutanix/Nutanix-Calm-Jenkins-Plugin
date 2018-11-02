@@ -6,7 +6,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
@@ -49,23 +49,25 @@ public class Rest {
         if (!VERIFY_CERTIFICATES) {
             trustCertificates();//skip certificate validation
         }
-
+        else{
+            HttpsURLConnection.setDefaultSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
+        }
         //Connect to url
         URL url = new URL(BASE_URL + relativeURL);
-        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
         try {
 
             String encoding = DatatypeConverter.printBase64Binary((USERNAME + ":" + PASSWORD).getBytes());
-            httpURLConnection.setRequestMethod(requestType);
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setRequestProperty("Authorization", "Basic " + encoding);
-            httpURLConnection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            httpURLConnection.setRequestProperty("Content-Type", "application/json");
+            httpsURLConnection.setRequestMethod(requestType);
+            httpsURLConnection.setDoOutput(true);
+            httpsURLConnection.setRequestProperty("Authorization", "Basic " + encoding);
+            httpsURLConnection.setRequestProperty("User-Agent", "Mozilla/5.0");
+            httpsURLConnection.setRequestProperty("Content-Type", "application/json");
 
             //send payload for post request
             if(requestType.equals(POST)){
-                httpURLConnection.setDoOutput(true);
-                OutputStream os = httpURLConnection.getOutputStream();
+                httpsURLConnection.setDoOutput(true);
+                OutputStream os = httpsURLConnection.getOutputStream();
                 if(payload.length > 0)
                     os.write(payload[0].getBytes());
                 else
@@ -75,10 +77,10 @@ public class Rest {
             }
 
             //return the response on success
-            int responseCode = httpURLConnection.getResponseCode();
+            int responseCode = httpsURLConnection.getResponseCode();
             switch (responseCode){
                 case 200 :  BufferedReader bufferedReader =
-                        new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                        new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream()));
                     String inputLine;
                     StringBuffer response = new StringBuffer();
                     while ((inputLine = bufferedReader.readLine()) != null)
@@ -88,7 +90,7 @@ public class Rest {
                     throw new Exception("URL: " + url.toString() + "\n" +
                             "Payload: " + (payload.length > 0?payload[0]:null) + "\n" +
                             "Response code: "+ responseCode + "\n" +
-                            "Response: " + httpURLConnection.getResponseMessage());
+                            "Response: " + httpsURLConnection.getResponseMessage());
 
             }
         }
@@ -98,7 +100,7 @@ public class Rest {
         }
         finally {
             //close connection
-            httpURLConnection.disconnect();
+            httpsURLConnection.disconnect();
         }
     }
 

@@ -88,11 +88,13 @@ public class CalmGlobalConfiguration extends GlobalConfiguration {
                 message = "CALM is not enabled";
         }
         catch (Exception e){
+            String exceptionStr = LOGGER.getStackTraceStr(e.getStackTrace());
+            LOGGER.debug(exceptionStr);
             if(e.getMessage().contains("UNAUTHORIZED"))
                 message = "Invalid credentials";
-            else if(e.getMessage().contains("CertificateException"))
+            else if(exceptionStr.contains("SSLException"))
                 message = "Certificate validation failed";
-            else if (e.getMessage().contains("Internal Server Error"))
+            else if (exceptionStr.contains("Internal Server Error"))
                 message = "PC is not accessible";
             setStatus("Verification Failed\nCause: "+ message);
             return "Verification Failed\nCause: "+ message;
