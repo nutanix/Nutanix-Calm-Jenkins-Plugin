@@ -310,13 +310,6 @@ public class Blueprint {
     public JSONObject launchBlueprint(String blueprintUuid, JSONObject blueprintSpec) throws Exception{
         return rest.post("blueprints/" + blueprintUuid +"/launch", blueprintSpec.toString());
     }
-
-
-    public static void main(String[] args) throws Exception{
-        Rest rest = new Rest("10.5.73.99","admin","Nutanix123#",true);
-        List<String> blueprint = Blueprint.getInstance(rest).getBlueprintsList("default");
-        System.out.println(blueprint.toString());
-    }
 }
 
 

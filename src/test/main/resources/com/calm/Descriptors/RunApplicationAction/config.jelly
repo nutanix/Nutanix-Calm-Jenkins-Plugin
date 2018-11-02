@@ -1,0 +1,210 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    This jelly script is used for per-project configuration.
+      See global.jelly for a general discussion about jelly script.
+    -->
+    <!--
+      Creates a text field that shows the value of the "name" property.
+      When submitted, it will be passed to the corresponding constructor parameter.
+    -->
+        <j:set var="editorId" value="${descriptor.createEditorId()}" />
+        <st:bind var="runApplicationAction" value="${descriptor}"/>
+        <f:entry title="Select Application" field="applicationName"
+            description="Select the Calm Application where actions have to be invoked.">
+            <f:select id="applications-${editorId}" onmousedown="getApplications(this.id)" onchange="applicationsChange(${editorId});"/>
+        </f:entry>
+
+        <f:entry title="Select Application Action" field="actionName"
+            description="Select the Action to be run.">
+            <f:select id="applicationActions-${editorId}" onmousedown="getApplicationActions(this.id, ${editorId})" onchange="appActionsChange(${editorId});"
+            class="select"/>
+         </f:entry>
+
+
+        <f:entry title="Runtime Variables (JSON)" field="runtimeVariables" description="Edit the runtime variable values as needed.">
+            <f:textarea id="actionRuntimeVariables-${editorId}"/>
+        </f:entry>
+
+
+
+    <script>
+              function applicationsChange(id){
+                 actions = document.getElementById("applicationActions-" + id);
+                 runtimeVariables = document.getElementById("actionRuntimeVariables-" + id);
+                 actions.innerHTML = null;
+                 runtimeVariables.value = null;
+                 actions.appendChild(document.createElement('option'));
+              }
+
+              function getApplications(id){
+                    var sel = document.getElementById(id);
+                    var apps;
+                    applicationNames = document.querySelectorAll(".applicationName");
+                    runApplicationAction.fetchApplications(function(obj){
+                          apps = obj.responseObject();
+                          if(apps === null){
+                            alert("ERROR occurred while fetching the applications")
+                            return;
+                          }
+                          sel.innerHTML = null;
+                          if(applicationNames !== null){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = "Applications created in Jenkins Blueprint Launch build step";
+                            opt.value = "Applications created in Jenkins Blueprint Launch build step";
+                            opt.setAttribute('disabled','disabled');
+                            opt.setAttribute('selected','true');
+                            sel.appendChild(opt);
+                            applicationNames.forEach(function(appObj){
+                                 var opt = document.createElement('option');
+                                 opt.innerHTML = appObj.value;
+                                 opt.value = appObj.value;
+                                 sel.appendChild(opt);
+                            });
+                          }
+                          if(apps.length &gt; 0){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = "Existing Applications in Nutanix Calm";
+                            opt.value = "Existing Applications in Nutanix Calm";
+                            opt.setAttribute('disabled','disabled');
+                            sel.appendChild(opt);
+                            var i;
+                            for(i = 0; i &lt; apps.length; i++){
+                                   var opt = document.createElement('option');
+                                   opt.innerHTML = apps[i];
+                                   opt.value = apps[i];
+                                   sel.appendChild(opt);
+                            }
+                          }
+
+                    });
+              }
+
+              function appActionsChange(id){
+                    runtimeVariables = document.getElementById("actionRuntimeVariables-" + id);
+                    runtimeVariables.value = "Fetching run time variables";
+                    addActionRuntimeVariables(id);
+              }
+
+              function getApplicationActions(id, editorId){
+                     console.log("logging the editorId: "+ editorId);
+                     appName = document.getElementById("applications-" + editorId).value;
+                     var applicationNames = [];
+                     var i = 0;
+                     var sel = document.getElementById("applicationActions-" + editorId);
+                     blueprintLaunchApps = document.querySelectorAll(".applicationName");
+                     i = 0;
+                     blueprintLaunchApps.forEach(function(appObj){
+                         applicationNames[i] = appObj.value;
+                         i++;
+                     });
+                     if(applicationNames.indexOf(appName) >= 0){
+                          var bpName = "";
+                          var appProfile = "";
+                          blueprintLaunchApps.forEach(function(appObj){
+                               if(appName === appObj.value){
+                                    var parentObject = appObj.parentElement.parentElement.parentElement;
+                                    bpName = parentObject.querySelector(".blueprint").value;
+                                    appProfile = parentObject.querySelector(".appProfile").value;
+                                    return true;
+                               }
+                          });
+                          runApplicationAction.getProfileActionsFromBlueprint(bpName, appProfile, function(obj){
+                              actions = obj.responseObject();
+                              if(actions === null){
+                                    alert("ERROR occurred while fetching the actions");
+                                    return;
+                              }
+                              console.log("values "+actions);
+                              var i;
+                              sel.innerHTML = null;
+                              var opt = document.createElement('option');
+                              opt.innerHTML = "Please select one";
+                              opt.value = "Please select one";
+                              opt.setAttribute('disabled','disabled');
+                              opt.setAttribute('selected','true');
+                              sel.appendChild(opt);
+                              for(i = 0; i &lt; actions.length; i++){
+                                   var opt = document.createElement('option');
+                                   console.log("value "+actions[i]);
+                                   opt.innerHTML = actions[i];
+                                   opt.value = actions[i];
+                                   sel.appendChild(opt);
+                              }
+                          });
+                     }
+                     else{
+                       runApplicationAction.fetchApplicationActions(appName, function(obj){
+                         actions = obj.responseObject();
+                         if(actions === null){
+                              alert("ERROR occurred while fetching the actions");
+                              return;
+                         }
+                         sel.innerHTML = null;
+                         var opt = document.createElement('option');
+                         opt.innerHTML = "Please select one";
+                         opt.value = "Please select one";
+                         opt.setAttribute('disabled','disabled');
+                         opt.setAttribute('selected','true');
+                         sel.appendChild(opt);
+                         actions.forEach(function(key){
+                             var opt = document.createElement('option');
+                             opt.innerHTML = key;
+                             opt.value = key;
+                             sel.appendChild(opt);
+                         });
+                       });
+                     }
+              }
+
+
+              function addActionRuntimeVariables(editorId){
+                  appname = document.getElementById("applications-" + editorId).value;
+                  action = document.getElementById("applicationActions-" + editorId).value;
+                  var applicationNames = [];
+                  console.log("inside runtime" + action )
+                  blueprintLaunchApps = document.querySelectorAll(".applicationName");
+                  var i = 0;
+                  blueprintLaunchApps.forEach(function(appObj){
+                      applicationNames[i] = appObj.value;
+                      i++;
+                  });
+                  if(applicationNames.indexOf(appName) >= 0){
+                       var bpName = "";
+                       var appProfile = "";
+                       blueprintLaunchApps.forEach(function(appObj){
+                            if(appName === appObj.value){
+                                 var parentObject = appObj.parentElement.parentElement.parentElement;
+                                 bpName = parentObject.querySelector(".blueprint").value;
+                                 appProfile = parentObject.querySelector(".appProfile").value;
+                                 return true;
+                            }
+                       });
+                       runApplicationAction.getProfileActionsVariablesFromBlueprint(bpName, appProfile, action, function(obj){
+                           runtimeVaraibles = obj.responseObject();
+                           if(runtimeVaraibles === null){
+                                alert("ERROR occurred while fetching runtime variables")
+                                return;
+                           }
+                           var json = JSON.parse(runtimeVaraibles);
+                           var runtimeElement = document.getElementById("actionRuntimeVariables-" + editorId);
+                           runtimeElement.value = JSON.stringify(json, undefined,4);
+                           console.log("value added");
+                       });
+                  }
+                  else{
+                    runApplicationAction.fetchRuntimeProfileActionVariables(appname, action, function(obj){
+                        runtimeVaraibles = obj.responseObject();
+                        if(runtimeVaraibles === null){
+                               alert("ERROR occurred while fetching runtime variables")
+                               return;
+                        }
+                        var json = JSON.parse(runtimeVaraibles);
+                        var runtimeElement = document.getElementById("actionRuntimeVariables-" + editorId);
+                        runtimeElement.value = JSON.stringify(json, undefined,4);
+                        console.log("value added");
+                    });
+                  }
+              }
+    </script>
+</j:jelly>
