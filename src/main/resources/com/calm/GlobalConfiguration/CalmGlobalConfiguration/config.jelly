@@ -29,9 +29,9 @@
     </style>
     <st:bind var="calmConfig" value="${descriptor}"/>
     <f:section title="Nutanix Calm Plugin Configuration">
-        <f:entry title="Prism Central IP" field="prismCentralIp"
-                 description="eg: 10.0.0.1">
-            <f:textbox clazz="required" checkMessage="${%IP Address is mandatory}" value="${instance.prismCentralIp}" id="prismCentralIp"/>
+        <f:entry title="Prism Central IP/DNS Name" field="prismCentralIp"
+                 description="eg: 10.0.0.1 or calm.jenkins.com">
+            <f:textbox clazz="required" checkMessage="${%IP Address or DNS Name is mandatory}" value="${instance.prismCentralIp}" id="prismCentralIp"/>
         </f:entry>
         <f:entry  title="${%Credentials}" field="credentials">
              <c:select/>

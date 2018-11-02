@@ -109,7 +109,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
         List<String> globalError = new ArrayList<String>();
         try{
             if (prismCentralIp == null || prismCentralIp.length() == 0) {
-                globalError.add("IP Address is mandatory parameter");
+                globalError.add("IP Address or DNS Name is mandatory parameter");
             }
 
             if (userName == null || userName.length() == 0) {
