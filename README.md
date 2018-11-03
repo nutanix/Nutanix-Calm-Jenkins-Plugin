@@ -13,7 +13,7 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
 * Navigate to Manage Jenkins→ Manage Plugins → Available.  Search for Nutanix Calm.
   ![](Docs/screenshots/Available_plugin.png)
 * To verify that the Nutanix Calm plug-in is successfully installed, click Manage Jenkins→ Manage Plugins→ Installed search for Nutanix Calm plugin.
-  ![](Docs/screenshots/Verify_plugin.png)
+  ![](Docs/screenshots/Installed_plugin.png)
 
 #### Plugin Configuration:
 * To configure the plugin first Navigate to Manage Jenkins -> Configure System -> Nutanix Calm Plugin Configuration. Provide the Prism Central IP/DNS Name, Username and Password.
