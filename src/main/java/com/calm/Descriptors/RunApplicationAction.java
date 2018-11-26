@@ -74,6 +74,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
         final EnvVars env = build.getEnvironment(listener);
         //Expanding appname to include the env variables in it's name
         String expandedApplicationName = env.expand(applicationName);
+        String expandedRuntimeVariables = env.expand(runtimeVariables);
 
         try {
             applicationUuid = Application.getInstance(rest).getAppUUID(expandedApplicationName);
@@ -84,7 +85,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
         log.println(" ");
         log.println("Executing Nutanix Calm Application Action Run Build Step");
         CalmExecutor calmExecutor = new CalmExecutor(prismCentralIp, userName, password, expandedApplicationName,
-                actionName, runtimeVariables, log, verifyCertificate);
+                actionName, expandedRuntimeVariables, log, verifyCertificate);
         log.println("##Connecting to calm instance##");
         List<String> globalError = new ArrayList<String>();
         try{
