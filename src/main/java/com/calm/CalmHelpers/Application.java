@@ -1,7 +1,9 @@
 package com.calm.CalmHelpers;
 
+import com.calm.Executor.CalmExecutor;
 import com.calm.Interface.Rest;
 import com.calm.Logger.NutanixCalmLogger;
+import hudson.EnvVars;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.PrintStream;
@@ -370,6 +372,60 @@ public class Application {
             appProfileActionVariables.put(key, profileActionsRuntimeMap.get(key));
         return appProfileActionVariables.toString();
     }
+
+    public HashMap<String, String> applicationDetails(String applicationName) throws Exception{
+        HashMap<String, String> keyValuePair = new HashMap<>();
+        String  appUuid;
+        JSONObject applicationJson;
+        JSONArray entities;
+        try {
+            appUuid = applicationNameUuidPair.get(applicationName);
+            applicationJson = getApplicationDetails(appUuid);
+            entities = applicationJson.getJSONObject("status").getJSONObject("resources").getJSONArray("deployment_list");
+        }
+        catch (Exception e){
+            LOGGER.debug("ERROR occurred while fetching deployment list for: " + applicationName );
+            LOGGER.debug(LOGGER.getStackTraceStr(e.getStackTrace()));
+            return null;
+        }
+        for (int i = 0; i < entities.length(); i++) {
+            try{
+                JSONObject entity = entities.getJSONObject(i);
+                JSONArray elementList = entity.getJSONObject("substrate_configuration").getJSONArray("element_list");
+                for (int j = 0; j < elementList.length(); j++) {
+                    JSONObject element = elementList.getJSONObject(j);
+                    String instanceName =  element.getString("instance_name");
+                    String type = element.getString("type");
+                    String address = element.getString("address");
+                    if(elementList.length() > 1) {
+                        String vmDetails = instanceName+ j + "_" +type;
+                        keyValuePair.put(vmDetails, address);
+                    }
+                    else{
+                        String vmDetails = instanceName + "_" +type;
+                        keyValuePair.put(vmDetails, address);
+                    }
+                }
+            }
+            catch (Exception e){
+                LOGGER.debug("ERROR occurred while parsing the entity: ");
+                LOGGER.debug(LOGGER.getStackTraceStr(e.getStackTrace()));
+            }
+        }
+        return keyValuePair;
+    }
+
+    public static void main(String[] args) throws Exception{
+        Rest rest =  new Rest("10.46.6.2", "admin", "Nutanix.123", false);
+        Application app = Application.getInstance(rest);
+        HashMap<String, String> appDetails = app.applicationDetails("Parallels300_1");
+        System.out.println(appDetails);
+    }
+
+
 }
+
+
+
 
 

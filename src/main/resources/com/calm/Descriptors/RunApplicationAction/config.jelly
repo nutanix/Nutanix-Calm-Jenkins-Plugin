@@ -8,19 +8,34 @@
       Creates a text field that shows the value of the "name" property.
       When submitted, it will be passed to the corresponding constructor parameter.
     -->
+        <style type="text/css">
+            td.setting-main{
+                position:relative;
+            }
+            td.setting-main>.invisible-btn{
+                position:absolute;
+                left:0;
+                top:0;
+                width:100%;
+                height:100%;
+                opacity:0;
+            }
+        </style>
+
+
         <j:set var="editorId" value="${descriptor.createEditorId()}" />
         <st:bind var="runApplicationAction" value="${descriptor}"/>
         <f:entry title="Select Application" field="applicationName"
-            description="Select the Calm Application where actions have to be invoked.">
-            <f:select id="applications-${editorId}" onmousedown="getApplications(this.id)" onchange="applicationsChange(${editorId});"/>
+           description="Select the Calm Application where actions have to be invoked.">
+           <f:button class="invisible-btn" onclick="getApplications(event.target, ${editorId})"></f:button>
+           <f:select id="applications-${editorId}" class="setting-input select" value="Please select a Project"> </f:select>
         </f:entry>
 
         <f:entry title="Select Application Action" field="actionName"
-            description="Select the Action to be run.">
-            <f:select id="applicationActions-${editorId}" onmousedown="getApplicationActions(this.id, ${editorId})" onchange="appActionsChange(${editorId});"
-            class="select"/>
-         </f:entry>
-
+           description="Select the Action to be run.">
+           <f:button class="invisible-btn" onclick="getApplicationActions(event.target, ${editorId})"></f:button>
+           <f:select id="applicationActions-${editorId}" class="setting-input select" value="Please select a Application Profile"> </f:select>
+        </f:entry>
 
         <f:entry title="Runtime Variables (JSON)" field="runtimeVariables" description="Edit the runtime variable values as needed.">
             <f:textarea id="actionRuntimeVariables-${editorId}"/>
@@ -29,56 +44,134 @@
 
 
     <script>
-              function applicationsChange(id){
-                 actions = document.getElementById("applicationActions-" + id);
-                 runtimeVariables = document.getElementById("actionRuntimeVariables-" + id);
-                 actions.innerHTML = null;
-                 runtimeVariables.value = null;
-                 actions.appendChild(document.createElement('option'));
+              function getEmptyButton(root, cb, text, id, editorId) {
+                var btn = document.createElement('button');
+                btn.classList.add('invisible-btn');
+                btn.addEventListener('click', function(e) {
+                    cb(e.target, editorId);
+                });
+                var slct = document.createElement('select');
+                slct.setAttribute('value', text);
+                var option = document.createElement('option');
+                option.appendChild(document.createTextNode(text));
+                slct.appendChild(option);
+
+                slct.id = id;
+                slct.classList.add('setting-input', 'select');
+                while (root.firstChild) {
+                    root.removeChild(root.firstChild);
+                }
+                root.appendChild(btn);
+                root.appendChild(slct);
               }
 
-              function getApplications(id){
+              function applicationsChange(id, updateActions){
+                 actions = document.getElementById("applicationActions-" + id);
+                 runtimeVariables = document.getElementById("actionRuntimeVariables-" + id);
+                 if (updateActions){
+                   getApplicationActions(actions, id)
+                 }else {
+                    if (blueprint) {
+                        getEmptyButton(actions.parentElement, getBlueprints, 'Please select an Action', 'actions-' + id, id);
+                    }
+                 runtimeVariables.value = null;
+              }
+
+              function getApplications(target, editorId) {
+                var myNode = target.parentElement;
+                var clearNode = function() {
+                    while (myNode.firstChild) {
+                        myNode.removeChild(myNode.firstChild);
+                    }
+                };
+                var calleeFunction = function() {
+                    clearNode();
+                    var text = 'Loading...';
+                    var btn = document.createElement('select');
+                    btn.classList.add('setting-input', 'select');
+                    btn.setAttribute('value', text);
+                    var option = document.createElement('option');
+                    option.appendChild(document.createTextNode(text));
+                    btn.appendChild(option);
+
+                    myNode.appendChild(btn);
                     var sel = document.getElementById(id);
                     var apps;
                     applicationNames = document.querySelectorAll(".applicationName");
                     runApplicationAction.fetchApplications(function(obj){
-                          apps = obj.responseObject();
-                          if(apps === null){
+                        apps = obj.responseObject();
+                        if(apps === null){
                             alert("ERROR occurred while fetching the applications")
                             return;
-                          }
-                          sel.innerHTML = null;
-                          if(applicationNames !== null){
-                            var opt = document.createElement('option');
-                            opt.innerHTML = "Applications created in Jenkins Blueprint Launch build step";
-                            opt.value = "Applications created in Jenkins Blueprint Launch build step";
-                            opt.setAttribute('disabled','disabled');
-                            opt.setAttribute('selected','true');
-                            sel.appendChild(opt);
-                            applicationNames.forEach(function(appObj){
-                                 var opt = document.createElement('option');
-                                 opt.innerHTML = appObj.value;
-                                 opt.value = appObj.value;
-                                 sel.appendChild(opt);
+                        }
+                        sel.innerHTML = null;
+                        if(applicationNames !== null){
+                          var opt = document.createElement('option');
+                          opt.innerHTML = "Applications created in Jenkins Blueprint Launch build step";
+                          opt.value = "Applications created in Jenkins Blueprint Launch build step";
+                          opt.setAttribute('disabled','disabled');
+                          opt.setAttribute('selected','true');
+                          sel.appendChild(opt);
+                          applicationNames.forEach(function(appObj){
+                             var opt = document.createElement('option');
+                             opt.innerHTML = appObj.value;
+                             opt.value = appObj.value;
+                             sel.appendChild(opt);
+                          });
+                        }
+
+                        if(apps.length &gt; 0){
+                        var opt = document.createElement('option');
+                        opt.innerHTML = "Existing Applications in Nutanix Calm";
+                        opt.value = "Existing Applications in Nutanix Calm";
+                        opt.setAttribute('disabled','disabled');
+                        sel.appendChild(opt);
+                        var i;
+                        for(i = 0; i &lt; apps.length; i++){
+                               var opt = document.createElement('option');
+                               opt.innerHTML = apps[i];
+                               opt.value = apps[i];
+                               sel.appendChild(opt);
+                        }
+                      }
+
+
+                        var selectBox = document.createElement('select');
+                        selectBox.id = 'applicationName-' + editorId;
+                        selectBox.classList.add('setting-input', 'select');
+                        if (apps.length) {
+                            apps.forEach(function(key) {
+                                var option = document.createElement('option');
+                                option.setAttribute('value', key);
+                                option.appendChild(document.createTextNode(key));
+                                selectBox.appendChild(option);
                             });
-                          }
-                          if(apps.length &gt; 0){
-                            var opt = document.createElement('option');
-                            opt.innerHTML = "Existing Applications in Nutanix Calm";
-                            opt.value = "Existing Applications in Nutanix Calm";
-                            opt.setAttribute('disabled','disabled');
-                            sel.appendChild(opt);
-                            var i;
-                            for(i = 0; i &lt; apps.length; i++){
-                                   var opt = document.createElement('option');
-                                   opt.innerHTML = apps[i];
-                                   opt.value = apps[i];
-                                   sel.appendChild(opt);
-                            }
-                          }
+                            selectBox.value = apps[0];
+                            selectBox.addEventListener('change', function() {
+                                applicationsChange(editorId, apps.length);
+                            });
+                        } else {
+                            var text = 'No calm Apps found';
+                            selectBox.setAttribute('value', text);
+                            var option = document.createElement('option');
+                            option.appendChild(document.createTextNode(text));
+                            selectBox.appendChild(option);
+                        }
+                        clearNode();
+                        myNode.appendChild(selectBox);
+                        setTimeout(function() {
+                            applicationsChange(editorId, apps.length);
+                        }, 0);
 
                     });
+                };
+                try {
+                    clearTimeout(window.calleeFunctionTimer);
+                } catch (e) {
+                }
+                window.calleeFunctionTimer = setTimeout(calleeFunction, 300);
               }
+
 
               function appActionsChange(id){
                     runtimeVariables = document.getElementById("actionRuntimeVariables-" + id);
@@ -86,16 +179,33 @@
                     addActionRuntimeVariables(id);
               }
 
-              function getApplicationActions(id, editorId){
-                     console.log("logging the editorId: "+ editorId);
-                     appName = document.getElementById("applications-" + editorId).value;
-                     var applicationNames = [];
-                     var i = 0;
-                     var sel = document.getElementById("applicationActions-" + editorId);
-                     blueprintLaunchApps = document.querySelectorAll(".applicationName");
-                     i = 0;
-                     blueprintLaunchApps.forEach(function(appObj){
-                         applicationNames[i] = appObj.value;
+
+              function getApplicationActions(target, editorId){
+                     var myNode = target.parentElement;
+                       var clearNode = function() {
+                           while (myNode.firstChild) {
+                               myNode.removeChild(myNode.firstChild);
+                           }
+                     };
+                     var calleeFunction = function() {
+                     clearNode();
+                        var text = 'Loading...';
+                        var btn = document.createElement('select');
+                        btn.classList.add('setting-input', 'select');
+                        btn.setAttribute('value', text);
+                        var option = document.createElement('option');
+                        option.appendChild(document.createTextNode(text));
+                        btn.appendChild(option);
+                        myNode.appendChild(btn);
+                        console.log("logging the editorId: "+ editorId);
+                        appName = document.getElementById("applications-" + editorId).value;
+                        var applicationNames = [];
+                        var i = 0;
+                        var sel = document.getElementById("applicationActions-" + editorId);
+                        blueprintLaunchApps = document.querySelectorAll(".applicationName");
+                        i = 0;
+                         blueprintLaunchApps.forEach(function(appObj){
+                           applicationNames[i] = appObj.value;
                          i++;
                      });
                      if(applicationNames.indexOf(appName) >= 0){

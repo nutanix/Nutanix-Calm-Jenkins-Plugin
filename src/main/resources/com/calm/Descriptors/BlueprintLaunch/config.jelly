@@ -17,21 +17,39 @@
                   background-color: lightgray;
                   height: 70px;
             }
+            td.setting-main{
+                position:relative;
+            }
+            td.setting-main>.invisible-btn{
+                position:absolute;
+                left:0;
+                top:0;
+                width:100%;
+                height:100%;
+                opacity:0;
+            }
+            td.setting-main .disp-n{
+                display:none;
+            }
         </style>
+
         <f:entry title="Select project" field="projectName"
             description="Select the Calm project. E.g. Default.">
-            <f:select id="project-${editorId}" onmousedown="getProjects(this.id)" onchange="projectsChange(${editorId})" class="select"/>
+            <f:button class="invisible-btn" onclick="getProjects(event.target, ${editorId})">${projectName}</f:button>
+            <f:select id="project-${editorId}" class="setting-input select" value="Please select a Project"> </f:select>
         </f:entry>
         <f:entry title="Select blueprint to launch" field="blueprintName"
             description="Select the Calm blueprint. E.g. Redis.">
-            <f:select id="blueprint-${editorId}" clazz="blueprint" onmousedown="getBlueprints(this.id,${editorId})" onchange="blueprintChange(${editorId})"/>
+            <f:button class="invisible-btn" onclick="getBlueprints(event.target, ${editorId})">${blueprintName}</f:button>
+            <f:select id="blueprint-${editorId}" class="setting-input select" value="Please select a Blueprint"> </f:select>
         </f:entry>
         <f:entry title="Blueprint description" field="blueprintDescription" description="Description of the selected blueprint">
               <f:textarea id="blueprintDescription-${editorId}" readonly="readonly" class="blueprintDescription"/>
         </f:entry>
         <f:entry title="Select Application Profile" field="appProfileName"
            description="Select the Application Profile for blueprint launch. E.g. Nutanix.">
-           <f:select id="profile-${editorId}" onmousedown="getAppProfiles(this.id, ${editorId})" clazz="appProfile" onchange="appProfileChange(${editorId})"/>
+           <f:button class="invisible-btn" onclick="getAppProfiles(event.target, ${editorId})">${appProfileName}</f:button>
+           <f:select id="profile-${editorId}" class="setting-input select" value="Please select a Application Profile"> </f:select>
         </f:entry>
 
         <f:entry title="Runtime Variables (JSON)" field="runtimeVariables" description="Edit the runtime variable values as needed.">
@@ -46,163 +64,352 @@
         </f:entry>
 
 	<script>
-
-
-	          function projectsChange(id){
-                   blueprint = document.getElementById("blueprint-" + id);
-                   appProfile = document.getElementById("profile-" + id);
-                   runtimeVariables = document.getElementById("runtimeVariables-" + id);
-                   blueprintDescription = document.getElementById("blueprintDescription-" + id);
-                   blueprint.innerHTML = null;
-                   appProfile.innerHTML = null;
-                   runtimeVariables.value = null;
-                   blueprintDescription.value = null;
-                   blueprint.appendChild(document.createElement('option'));
-                   appProfile.appendChild(document.createElement('option'));
-              }
-
-              function blueprintChange(id){
-                   appProfile = document.getElementById("profile-" + id);
-                   runtimeVariables = document.getElementById("runtimeVariables-" + id);
-                   blueprintDescription = document.getElementById("blueprintDescription-" + id);
-                   blueprintName = document.getElementById("blueprint-" + id).value;
-                   blueprintDescription.value = "Fetching blueprint description";
-                   appProfile.innerHTML = null;
-                   appProfile.appendChild(document.createElement('option'));
-                   runtimeVariables.value = null;
-                   applicationLaunch.fetchBlueprintDescription(blueprintName, function(obj){
-                        desc = obj.responseObject();
-                        if(desc.length &gt; 0){
-                            blueprintDescription.value = desc;
+            var getProjectConfig = function(editorId){
+                var getValue = function(fieldName) {
+                    var field = document.getElementById(fieldName + '-' + editorId), fieldVal ="";
+                    try{
+                        fieldVal = field.value;
+                        if(fieldVal.indexOf('Please select')===0){
+                            fieldVal = "";
                         }
-                        else{
-                            blueprintDescription.value = "Description is empty";
-                        }
+                    } catch (e){}
+                    return fieldVal;
+                }
+                var projectName = getValue('project');
+                var blueprintName = getValue('blueprint');
+                var appProfileName = getValue('profile');
+                return {
+                    projectName,
+                    blueprintName,
+                    appProfileName
+                };
+            };
+	        function setLocalValue (editorId) {
+	            var localData = localStorage.getItem('autoLoadParams');
+	            if(localData){
+	                localData = JSON.parse(localData)
+	            } else {
+	                localData = {};
+	            }
+	            localData = getProjectConfig(editorId);
+                localStorage.setItem('autoLoadParams', JSON.stringify(localData));
+	        }
 
-                   });
-              }
+	        function getLocalValue (editorId) {
+                var defaultData = {
+                      projectName: "",
+                      blueprintName: "",
+                      appProfileName: ""
+                  };
+                var localData = localStorage.getItem('autoLoadParams');
+                if(localData){
+                    localData = JSON.parse(localData);
+                    if (localData) {
+                        return localData;
+                    } else {
+                        return defaultData;
+                    }
+                } else {
+                    return defaultData;
+                }
+            }
+	        function getEmptyButton(root, cb, text, id, editorId) {
+                var btn = document.createElement('button');
+                btn.classList.add('invisible-btn');
+                btn.addEventListener('click', function(e) {
+                    cb(e.target, editorId);
+                });
+                var slct = document.createElement('select');
+                slct.setAttribute('value', text);
+                var option = document.createElement('option');
+                option.appendChild(document.createTextNode(text));
+                slct.appendChild(option);
 
-              function appProfileChange(id){
-                   runtimeVariables = document.getElementById("runtimeVariables-" + id);
-                   runtimeVariables.value = "Fetching the runtime variables";
-                   addRuntimeVariables(id);
-              }
+                slct.id = id;
+                slct.classList.add('setting-input', 'select');
+                while (root.firstChild) {
+                    root.removeChild(root.firstChild);
+                }
+                root.appendChild(btn);
+                root.appendChild(slct);
+            }
 
-	          function getProjects(id){
-                  applicationLaunch.fetchProjects(function(obj)
-                     {
-                       projectList = obj.responseObject();
-                       if(projectList === null){
-                            alert("ERROR occurred while fetching projects. Please check the system logs");
+
+            function projectsChange(id, updateBP, autoLoadParams) {
+                runtimeVariables = document.getElementById('runtimeVariables-' + id);
+                blueprintDescription = document.getElementById('blueprintDescription-' + id);
+                blueprint = document.getElementById('blueprint-' + id);
+                setLocalValue(id);
+                if (updateBP) {
+                    getBlueprints(blueprint, id, autoLoadParams);
+                } else {
+                    if (blueprint) {
+                        getEmptyButton(blueprint.parentElement, getBlueprints, 'Please select a Blueprint', 'blueprint-' + id, id);
+                    }
+                }
+                runtimeVariables.value = null;
+                blueprintDescription.value = null;
+            }
+
+            function blueprintChange(id, updateProfile, autoLoadParams) {
+                runtimeVariables = document.getElementById('runtimeVariables-' + id);
+                blueprintDescription = document.getElementById('blueprintDescription-' + id);
+                blueprintName = document.getElementById('blueprint-' + id).value;
+                blueprintDescription.value = 'Fetching blueprint description';
+                appProfile = document.getElementById('profile-' + id);
+                setLocalValue(id);
+                if (updateProfile) {
+                    getAppProfiles(appProfile, id, autoLoadParams);
+                } else {
+                    if (appProfile) {
+                        getEmptyButton(appProfile.parentElement, getAppProfiles, 'Please select a Application Profile', 'profile-' + id, id);
+                    }
+                }
+                runtimeVariables.value = null;
+                applicationLaunch.fetchBlueprintDescription(blueprintName, function(obj) {
+                    desc = obj.responseObject();
+                    if (desc.length &gt; 0) {
+                        blueprintDescription.value = desc;
+                    } else {
+                        blueprintDescription.value = 'Description is empty';
+                    }
+
+                });
+            }
+
+            function appProfileChange(id) {
+                runtimeVariables = document.getElementById('runtimeVariables-' + id);
+                runtimeVariables.value = 'Fetching the runtime variables';
+                addRuntimeVariables(id);
+                setLocalValue(id);
+            }
+
+
+            function getProjects(target, editorId, autoLoadParams) {
+                var myNode = target.parentElement;
+                var clearNode = function() {
+                    while (myNode.firstChild) {
+                        myNode.removeChild(myNode.firstChild);
+                    }
+                };
+                var calleeFunction = function() {
+                    clearNode();
+                    var text = 'Loading...';
+                    var btn = document.createElement('select');
+                    btn.classList.add('setting-input', 'select');
+                    btn.setAttribute('value', text);
+                    var option = document.createElement('option');
+                    option.appendChild(document.createTextNode(text));
+                    btn.appendChild(option);
+
+                    myNode.appendChild(btn);
+                    applicationLaunch.fetchProjects(function(obj) {
+                        projectList = obj.responseObject();
+                        if (projectList === null) {
+                            alert('ERROR occurred while fetching projects. Please check the system logs');
                             return;
-                       }
-                       document.getElementById(id).innerHTML=null;
-                       var sel = document.getElementById(id);
-                       sel.innerHTML = null;
-                       var opt = document.createElement('option');
-                       opt.innerHTML = "Please select one";
-                       opt.value = "Please select one";
-                       opt.setAttribute('disabled','disabled');
-                       opt.setAttribute('selected','true');
-                       sel.appendChild(opt);
-                       projectList.forEach(function(key){
-                           var opt = document.createElement('option');
-                           var value = key;
-                           var html = key;
-                           opt.innerHTML = html;
-                           opt.value = key;
-                           sel.appendChild(opt);
-                       });
-                      });
+                        }
+                        var selectBox = document.createElement('select');
+                        selectBox.id = 'project-' + editorId;
+                        selectBox.classList.add('setting-input', 'select');
+                        if (projectList.length) {
+                            projectList.forEach(function(key) {
+                                var option = document.createElement('option');
+                                option.setAttribute('value', key);
+                                option.appendChild(document.createTextNode(key));
+                                selectBox.appendChild(option);
+                            });
+                            if (autoLoadParams) {
+                                selectBox.value = autoLoadParams.projectName;
+                            } else {
+                                selectBox.value = projectList[0];
+                            }
+                            selectBox.addEventListener('change', function() {
+                                projectsChange(editorId, projectList.length);
+                            });
+                        } else {
+                            var text = 'No calm projects found';
+                            selectBox.setAttribute('value', text);
+                            var option = document.createElement('option');
+                            option.appendChild(document.createTextNode(text));
+                            selectBox.appendChild(option);
+                        }
+                        clearNode();
+                        myNode.appendChild(selectBox);
+                        setTimeout(function() {
+                            projectsChange(editorId, projectList.length, autoLoadParams);
+                        }, 0);
 
-               }
+                    });
+                };
+                try {
+                    clearTimeout(window.calleeFunctionTimer);
+                } catch (e) {
+                }
+                window.calleeFunctionTimer = setTimeout(calleeFunction, 300);
+            }
 
 
-              function getBlueprints(id, editorId){
-                  console.log("logging the editorId: "+ editorId);
-                  projectName = document.getElementById("project-" + editorId).value;
-                  applicationLaunch.fetchBlueprints(projectName, function(obj) {
-                      blueprints =  obj.responseObject();
-                      if(blueprints === null){
-                        alert("ERROR occurred while fetching blueprints");
+            function getBlueprints(target, editorId, autoLoadParams) {
+                var myNode = target.parentElement;
+                var clearNode = function() {
+                    while (myNode.firstChild) {
+                        myNode.removeChild(myNode.firstChild);
+                    }
+                };
+                var calleeFunction = function() {
+                    clearNode();
+                    var text = 'Loading...';
+                    var btn = document.createElement('select');
+                    btn.classList.add('setting-input', 'select');
+                    btn.setAttribute('value', text);
+                    var option = document.createElement('option');
+                    option.appendChild(document.createTextNode(text));
+                    btn.appendChild(option);
+                    myNode.appendChild(btn);
+
+                    projectName = document.getElementById('project-' + editorId).value;
+                    console.log('projectName: ', projectName);
+                    applicationLaunch.fetchBlueprints(projectName, function(obj) {
+                        blueprints = obj.responseObject();
+                        if (blueprints === null) {
+                            alert('ERROR occurred while fetching blueprints');
+                            return;
+                        }
+
+                        var selectBox = document.createElement('select');
+                        selectBox.id = 'blueprint-' + editorId;
+                        selectBox.classList.add('setting-input', 'select');
+                        if (blueprints.length !== 0) {
+                            blueprints.forEach(function(key) {
+                                var option = document.createElement('option');
+                                option.setAttribute('value', key);
+                                option.appendChild(document.createTextNode(key));
+                                selectBox.appendChild(option);
+                            });
+                            if (autoLoadParams) {
+                                selectBox.value = autoLoadParams.blueprintName;
+                            } else {
+                                selectBox.value = blueprints[0];
+                            }
+                            selectBox.addEventListener('change', function() {
+                                blueprintChange(editorId, blueprints.length);
+                            });
+                        } else {
+                            var text = 'No blueprints in this project';
+                            selectBox.setAttribute('value', text);
+                            var option = document.createElement('option');
+                            option.appendChild(document.createTextNode(text));
+                            selectBox.appendChild(option);
+                        }
+                        clearNode();
+                        myNode.appendChild(selectBox);
+                        setTimeout(function() {
+                            blueprintChange(editorId, blueprints.length, autoLoadParams);
+                        }, 0);
+
+                    });
+                };
+                try {
+                    clearTimeout(window.calleeFunctionTimer);
+                } catch (e) {
+                }
+                window.calleeFunctionTimer = setTimeout(calleeFunction, 300);
+            }
+
+            function getAppProfiles(target, editorId, autoLoadParams) {
+                var myNode = target.parentElement;
+                var clearNode = function() {
+                    while (myNode.firstChild) {
+                        myNode.removeChild(myNode.firstChild);
+                    }
+                };
+                var calleeFunction = function() {
+                    clearNode();
+                    var text = 'Loading...';
+                    var btn = document.createElement('select');
+                    btn.classList.add('setting-input', 'select');
+                    btn.setAttribute('value', text);
+                    var option = document.createElement('option');
+                    option.appendChild(document.createTextNode(text));
+                    btn.appendChild(option);
+                    myNode.appendChild(btn);
+                    bpname = document.getElementById('blueprint-' + editorId).value;
+                    applicationLaunch.fetchAppProfiles(bpname, function(obj) {
+                        applicationProfileList = obj.responseObject();
+                        if (applicationProfileList === null) {
+                            alert('Error occurred while fetching profiles');
+                            return;
+                        }
+                        var selectBox = document.createElement('select');
+                        selectBox.id = 'profile-' + editorId;
+                        selectBox.classList.add('setting-input', 'select');
+                        if (applicationProfileList.length) {
+                            applicationProfileList.forEach(function(key) {
+                                var option = document.createElement('option');
+                                option.setAttribute('value', key);
+                                option.appendChild(document.createTextNode(key));
+                                selectBox.appendChild(option);
+                            });
+                            if (autoLoadParams) {
+                                selectBox.value = autoLoadParams.appProfileName;
+                            } else {
+                                selectBox.value = applicationProfileList[0];
+                            }
+
+                            selectBox.addEventListener('change', function() {
+                                appProfileChange(editorId);
+                            });
+                        } else {
+                            var txt = 'No blueprints in this project';
+                            selectBox.setAttribute('value', txt);
+                            var option = document.createElement('option');
+                            option.appendChild(document.createTextNode(txt));
+                            selectBox.appendChild(option);
+                        }
+                        clearNode();
+                        myNode.appendChild(selectBox);
+                        setTimeout(function() {
+                            appProfileChange(editorId);
+                        }, 0);
+
+                    });
+                };
+                try {
+                    clearTimeout(window.calleeFunctionTimer);
+                } catch (e) {
+                }
+                window.calleeFunctionTimer = setTimeout(calleeFunction, 300);
+            }
+
+            function addRuntimeVariables(editorId) {
+                bpName = document.getElementById('blueprint-' + editorId).value;
+                profileName = document.getElementById('profile-' + editorId).value;
+                applicationLaunch.fetchRuntimeProfileVariables(bpName, profileName, function(obj) {
+                    runTime = obj.responseObject();
+                    if (runTime === null) {
+                        alert('ERROR occurred while fetching runtime variables');
                         return;
-                      }
-                      document.getElementById(id).innerHTML=null;
-                      var sel = document.getElementById(id);
-                      sel.innerHTML = null;
+                    }
+                    var json = JSON.parse(obj.responseObject());
+                    var runtimeElement = document.getElementById('runtimeVariables-' + editorId);
+                    runtimeElement.value = JSON.stringify(json, undefined, 4);
+                    console.log('value added');
+                });
+            }
+            function autoLoadProjectConfig() {
+                try {
+                    var prof = document.querySelectorAll('[id^="project-"]');
+                    Array.prototype.forEach.apply(prof, [function(item) {
+                        var editorId = item.id.split('-')[1];
+                        getProjects(item, editorId, getProjectConfig(editorId));
+                    }]);
+                } catch (err) {
+                    console.log('No previous value');
+                }
+            };
 
-                      if(blueprints.length !== 0){
-                          var opt = document.createElement('option');
-                          opt.innerHTML = "Please select one";
-                          opt.value = "Please select one";
-                          opt.setAttribute('disabled','disabled');
-                          opt.setAttribute('selected','true');
-                          sel.appendChild(opt);
-                          var i;
-                          for(i = 0;i &lt; blueprints.length; i++){
-                            var opt = document.createElement('option');
-                            opt.innerHTML = blueprints[i];
-                            opt.value = blueprints[i];
-                            sel.appendChild(opt);
-                          }
-                      }
-                      else{
-                          var opt = document.createElement('option');
-                          opt.innerHTML = "No blueprints in this project";
-                          opt.value = "No blueprints in this project";
-                          opt.setAttribute('disabled','disabled');
-                          opt.setAttribute('selected','true');
-                          sel.appendChild(opt);
-                      }
-                   });
-              }
-
-              function getAppProfiles(id, editorId){
-                  bpname = document.getElementById("blueprint-" + editorId).value;
-                  applicationLaunch.fetchAppProfiles(bpname, function(obj)
-                    {
-                      applicationProfileList = obj.responseObject();
-                      if(applicationProfileList === null){
-                          alert("Error occurred while fetching profiles");
-                          return;
-                      }
-
-                      document.getElementById(id).innerHTML=null;
-                      var sel = document.getElementById(id);
-                      sel.innerHTML = null;
-                      var opt = document.createElement('option');
-                      opt.innerHTML = "Please select one";
-                      opt.value = "Please select one";
-                      opt.setAttribute('disabled','disabled');
-                      opt.setAttribute('selected','true');
-                      sel.appendChild(opt);
-                      applicationProfileList.forEach(function(key){
-                          var opt = document.createElement('option');
-                          var value = key;
-                          var html = key;
-                          opt.innerHTML = html;
-                          opt.value = key;
-                          sel.appendChild(opt);
-                      });
-                    });
-
-              }
-              function addRuntimeVariables(editorId){
-                    bpName = document.getElementById("blueprint-" + editorId).value;
-                    profileName = document.getElementById("profile-" + editorId).value;
-                    applicationLaunch.fetchRuntimeProfileVariables(bpName, profileName, function(obj){
-                        runTime = obj.responseObject();
-                        if(runTime === null){
-                            alert("ERROR occurred while fetching runtime variables");
-                            return;
-                        }
-                        var json = JSON.parse(obj.responseObject());
-                        var runtimeElement = document.getElementById("runtimeVariables-" + editorId);
-                        runtimeElement.value = JSON.stringify(json, undefined,4);
-                        console.log("value added");
-                    });
-               }
-
+            setTimeout(autoLoadProjectConfig, 1000);
     </script>
 </j:jelly>
 

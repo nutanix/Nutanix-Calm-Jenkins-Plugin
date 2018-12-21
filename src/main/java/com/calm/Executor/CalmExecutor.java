@@ -10,6 +10,15 @@ import org.json.simple.parser.JSONParser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.util.HashMap;
+
+import hudson.EnvVars;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
+import java.util.List;
 
 public class CalmExecutor {
     private String prismCentralIp, userName, password, blueprintName, applicationName, applicationProfileName, actionName,
@@ -90,6 +99,7 @@ public class CalmExecutor {
             else{
                 applicationHelper.taskOutput(applicationUuid, "action_create", logger);
                 logger.println(" Application " + this.applicationName + " is " + applicationStatus);
+                logger.println(getAppDetails(applicationName));
             }
         }
     }
@@ -137,7 +147,38 @@ public class CalmExecutor {
         }
         else{
             logger.println(" Application Action " + this.actionName + " is " + actionStatus);
+            logger.println(getAppDetails(applicationName));
         }
+    }
+
+    public void createGlobalEnvironmentVariables(String key, String value)throws Exception{
+
+        Jenkins instance = Jenkins.getInstance();
+
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = instance.getGlobalNodeProperties();
+        List<EnvironmentVariablesNodeProperty> envVarsNodePropertyList = globalNodeProperties.getAll(EnvironmentVariablesNodeProperty.class);
+
+        EnvironmentVariablesNodeProperty newEnvVarsNodeProperty = null;
+        EnvVars envVars = null;
+
+        if ( envVarsNodePropertyList == null || envVarsNodePropertyList.size() == 0 ) {
+            newEnvVarsNodeProperty = new hudson.slaves.EnvironmentVariablesNodeProperty();
+            globalNodeProperties.add(newEnvVarsNodeProperty);
+            envVars = newEnvVarsNodeProperty.getEnvVars();
+        } else {
+            envVars = envVarsNodePropertyList.get(0).getEnvVars();
+        }
+        envVars.put(key, value);
+        instance.save();
+
+    }
+
+    public String getAppDetails (String applicationName)throws Exception{
+        Rest rest =  new Rest(prismCentralIp, userName, password, this.verifyCertificate);
+        Application applicationHelper = Application.getInstance(rest);
+        HashMap<String, String> appDetails = applicationHelper.applicationDetails(applicationName);
+        createGlobalEnvironmentVariables("CalmBp",(appDetails).toString());
+        return (appDetails).toString();
     }
 
 }

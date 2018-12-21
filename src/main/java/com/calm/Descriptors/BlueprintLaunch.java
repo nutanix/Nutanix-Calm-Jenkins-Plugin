@@ -88,6 +88,7 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
         //Expanding appname to include the env variables in it's name
         String expandedApplicationName = env.expand(applicationName);
         String expandedRuntimeVariables = env.expand(runtimeVariables);
+        String appDetails  = env.expand(runtimeVariables);
         log.println("Executing Nutanix Calm Blueprint launch Build Step");
         CalmGlobalConfiguration calmGlobalConfiguration = CalmGlobalConfiguration.get();
         String prismCentralIp = calmGlobalConfiguration.getPrismCentralIp();
