@@ -137,7 +137,7 @@ public class Application {
             TimeUnit.SECONDS.sleep(45);
             applicationJson = getApplicationDetails(applicationUuid);
             applicationStatus = applicationJson.getJSONObject("status").getString("state");
-            if (applicationStatus.equals(state_name) || applicationStatus.equalsIgnoreCase("error"))
+            if (applicationStatus.equals(state_name) || applicationStatus.equalsIgnoreCase("error") || applicationStatus.equalsIgnoreCase("failure"))
                 break;
             logger.println(" Application " + appName + " status is : " + applicationStatus);
         }
@@ -264,7 +264,7 @@ public class Application {
             TimeUnit.SECONDS.sleep(45);
             actionStatusResponse = rest.get("apps/" + applicationUuid + "/app_runlogs/" + runlogUuid);
             actionStatus = actionStatusResponse.getJSONObject("status").getString("state");
-            if (actionStatus.equals(state) || actionStatus.equalsIgnoreCase("error"))
+            if (actionStatus.equals(state) || actionStatus.equalsIgnoreCase("error") || actionStatus.equalsIgnoreCase("failure"))
                 break;
             logger.println(" Application Action " + actionName + " status is : " + actionStatus);
         }
@@ -370,6 +370,11 @@ public class Application {
             appProfileActionVariables.put(key, profileActionsRuntimeMap.get(key));
         return appProfileActionVariables.toString();
     }
+
+
 }
+
+
+
 
 
