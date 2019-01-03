@@ -10,6 +10,15 @@ import org.json.simple.parser.JSONParser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.util.HashMap;
+
+import hudson.EnvVars;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
+import java.util.List;
 
 public class CalmExecutor {
     private String prismCentralIp, userName, password, blueprintName, applicationName, applicationProfileName, actionName,
@@ -92,6 +101,7 @@ public class CalmExecutor {
                 logger.println(" Application " + this.applicationName + " is " + applicationStatus);
             }
         }
+        getAppDetails(this.applicationName);
     }
 
     public void runAppAction()throws Exception{
@@ -133,11 +143,42 @@ public class CalmExecutor {
         String actionStatus = applicationHelper.waitForActionToComplete(this.applicationName, runlogUuid, this.logger);
         if (!actionStatus.equals("SUCCESS")) {
             //TODO : fetch failed task logs
+            applicationHelper.taskOutput(appUuid, this.actionName, logger);
             throw new Exception("Application Action " + this.actionName + " has failed with an error, please have a look into this app in your PC");
         }
         else{
+            applicationHelper.taskOutput(appUuid, this.actionName, logger);
             logger.println(" Application Action " + this.actionName + " is " + actionStatus);
         }
+    }
+
+    public void createGlobalEnvironmentVariables(String key, String value)throws Exception{
+
+        Jenkins instance = Jenkins.getInstance();
+
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = instance.getGlobalNodeProperties();
+        List<EnvironmentVariablesNodeProperty> envVarsNodePropertyList = globalNodeProperties.getAll(EnvironmentVariablesNodeProperty.class);
+
+        EnvironmentVariablesNodeProperty newEnvVarsNodeProperty = null;
+        EnvVars envVars = null;
+
+        if ( envVarsNodePropertyList == null || envVarsNodePropertyList.size() == 0 ) {
+            newEnvVarsNodeProperty = new hudson.slaves.EnvironmentVariablesNodeProperty();
+            globalNodeProperties.add(newEnvVarsNodeProperty);
+            envVars = newEnvVarsNodeProperty.getEnvVars();
+        } else {
+            envVars = envVarsNodePropertyList.get(0).getEnvVars();
+        }
+        envVars.put(key, value);
+        instance.save();
+
+    }
+
+    public void getAppDetails (String applicationName)throws Exception{
+        Rest rest =  new Rest(prismCentralIp, userName, password, this.verifyCertificate);
+        Application applicationHelper = Application.getInstance(rest);
+        HashMap<String, String> appDetails = applicationHelper.applicationDetails(applicationName);
+        createGlobalEnvironmentVariables("CalmServicesIP",(appDetails).toString());
     }
 
 }
