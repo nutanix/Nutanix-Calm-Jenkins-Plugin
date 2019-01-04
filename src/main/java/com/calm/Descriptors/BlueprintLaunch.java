@@ -190,7 +190,6 @@ public class BlueprintLaunch extends Builder implements SimpleBuildStep {
             save();
             LOGGER.debug("Inside configure");
             return super.configure(req, formData);
-
         }
 
         @JavaScriptMethod
