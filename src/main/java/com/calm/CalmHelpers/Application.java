@@ -87,11 +87,16 @@ public class Application {
 
     public String getApplicationUuidByRequestId(String blueprintUuid, String requestId) throws Exception{
         String appUuid = null;
+        int retry = 0;
         do {
             JSONObject  applicationJSON = rest.get("blueprints/" + blueprintUuid + "/pending_launches/" + requestId);
-            appUuid = applicationJSON.getJSONObject("status").getString("application_uuid");
+            if(applicationJSON.getJSONObject("status").isNull("application_uuid"))
+                appUuid = "null";
+            else
+                appUuid = applicationJSON.getJSONObject("status").getString("application_uuid");
             TimeUnit.SECONDS.sleep(15);
-        } while (appUuid.equals("null"));
+            retry++;
+        } while (appUuid.equals("null") && retry < 10);
         return appUuid;
     }
 
