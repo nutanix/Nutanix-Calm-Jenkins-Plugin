@@ -1,3 +1,8 @@
+#### v1.2.1
+* 75f0667 (HEAD, origin/topic/CALM-21334_jsonobject_issue, topic/CALM-21334_jsonobject_issue) Increased retry time for app uuid
+* e0fe20f Updated plugin version
+* 980e9c6 Fix for Null String JSONObject issue
+
 #### v1.2
 * 60b2023 (HEAD -> master) [maven-release-plugin] prepare for next development iteration
 * 92336e6 (tag: nutanix-calm-1.2) [maven-release-plugin] prepare release nutanix-calm-1.2
