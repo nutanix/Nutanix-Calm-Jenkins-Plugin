@@ -96,7 +96,7 @@ public class Application {
                 appUuid = applicationJSON.getJSONObject("status").getString("application_uuid");
             TimeUnit.SECONDS.sleep(15);
             retry++;
-        } while (appUuid.equals("null") && retry < 10);
+        } while (appUuid.equals("null") && retry < 20);
         return appUuid;
     }
 
