@@ -302,9 +302,11 @@ public class Application {
                         String taskUuid = eachAction.getJSONObject("metadata").getString("uuid");
                         response = rest.get("apps/" + appUuid + "/app_runlogs/" + taskUuid + "/output");
                         JSONArray outputList = response.getJSONObject("status").getJSONArray("output_list");
-                        String output = outputList.getJSONObject(0).getString("output");
-                        logger.println("Task Name: " + taskName);
-                        logger.println(taskName + " output is " + output);
+                        if(outputList.length() > 0) {
+                            String output = outputList.getJSONObject(0).getString("output");
+                            logger.println("Task Name: " + taskName);
+                            logger.println(taskName + " output is " + output);
+                        }
                     }
                 }
             }

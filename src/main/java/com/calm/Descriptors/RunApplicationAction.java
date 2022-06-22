@@ -111,6 +111,7 @@ public class RunApplicationAction extends Builder implements SimpleBuildStep {
         }
         catch (Exception e){
             log.println(e.getMessage());
+            e.printStackTrace(System.out);
             build.setResult(Result.FAILURE);
         }
     }

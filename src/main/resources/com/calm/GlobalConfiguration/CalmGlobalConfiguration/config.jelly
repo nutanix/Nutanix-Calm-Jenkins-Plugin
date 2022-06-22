@@ -52,8 +52,16 @@
                  statusElement.value = null;
                  prismCentralIp = document.getElementById("prismCentralIp").getValue();
                  parent = document.getElementById("prismCentralIp").parentElement.parentElement;
-                 sibling = parent.nextSibling.nextSibling.nextSibling.nextSibling;
-                 credentialId = sibling.querySelector(".credentials-select").getValue();
+                 credLocator = null;
+                 sibling = parent.nextSibling;
+                 while(sibling) {
+                   credLocator = sibling.querySelector(".credentials-select");
+                   if (credLocator != null) {
+                     break;
+                   }
+                   sibling = sibling.nextSibling;
+                 }
+                 credentialId = credLocator.getValue();
                  validateCertificate = document.getElementById("validateCertificate").getValue();
                  console.log("certs "+ Boolean(validateCertificate));
                  calmConfig.isCalmEnabled(prismCentralIp, credentialId, Boolean(validateCertificate), function (obj){
