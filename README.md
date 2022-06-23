@@ -1,13 +1,13 @@
-# Nutanix Calm Plugin
+ # Nutanix Calm Plugin
 Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provision infrastructure, and services in a multi cloud environment and subsequently run actions/tasks on those applications.
 
 #### License:
 * All source code is licensed under the MIT license.
 
-#### Supported Versions:
-* Jenkins versions: 2.107.2 and later
-* Nutanix Calm versions: 5.7.1 and later
-* Google Chrome version:  69.0.3497.100 (Official Build) (64-bit)
+#### Qualified Versions:
+* Jenkins versions: 2.235.1, 2.263.1 and 2.303.3
+* Nutanix Calm version: 3.5.0
+* Google Chrome version: 102.0.5005.115  (Official Build) (64-bit)
 
 #### Plugin Installation:
 * Navigate to Manage Jenkins→ Manage Plugins → Available.  Search for Nutanix Calm.

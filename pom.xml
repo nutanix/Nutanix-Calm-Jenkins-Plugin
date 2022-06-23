@@ -22,7 +22,7 @@
     </properties>
     <name>Nutanix Calm Plugin</name>
     <description>This plugin allows users to launch blueprints in Nutanix Calm. Currently this plugin can be used in Jenkins freestyle projects</description>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Nutanix+Calm+Plugin</url>
+    <url>https://github.com/jenkinsci/nutanix-calm-plugin</url>
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
     <licenses>
         <license>
