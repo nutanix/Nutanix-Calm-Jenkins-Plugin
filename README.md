@@ -92,3 +92,4 @@ Nutanix Calm Jenkins plugin allows you to launch Nutanix Calm blueprint, provisi
     * Verify issue under 'Nutanix Calm Plugin Configuration' step try executing below command from jenkins server.
     ```curl -k --header 'Content-Type: application/json' -u <user>:'<secret>'  https://<pc_ip>:9440/api/nutanix/v3/services/nucalm/status```
     Output: ```{"service_enablement_status": "ENABLED"}```
+test
