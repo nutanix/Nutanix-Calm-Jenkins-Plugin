@@ -1,3 +1,9 @@
+#### v1.2.2
+Release date: _Feb 29, 2024_
+
+* Remove unused org.jglobus from pom.xml
+* Upgraded json from 20090211 to 20231013
+
 #### v1.2.1
 Release date: _Jun 23, 2022_
 
